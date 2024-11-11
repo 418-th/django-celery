@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: postgres
+    image: postgres:13
+    env_file:
+      - ../docker-compose/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    env_file:
+      - ../docker-compose/.env
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - redis_data:/data
+
+  django-server:
+    container_name: django
+    build:
+      context: ..
+    command: sh -c "python manage.py migrate && gunicorn elk.wsgi:application --bind ${GUNICORN_HOST}:${GUNICORN_BASE_PORT} --reload"
+    ports:
+      - "${GUNICORN_PORTS}"
+    volumes:
+      - ../:/app/
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ../docker-compose/.env
+
+  celery:
+    container_name: celery
+    build:
+      context: ..
+    command:  celery -A elk.celery_app worker --loglevel=info --concurrency="${CONCURRENCY}" -E
+    volumes:
+      - ../:/app/
+    env_file:
+      - ../docker-compose/.env
+    depends_on:
+      - django-server
+
+#  gulp:
+#    image: node:14
+#    working_dir: /app
+#    command: sh -c "npm install && gulp"
+#    volumes:
+#      - ../:/app
+#    depends_on:
+#      - app
+
+volumes:
+  postgres_data:
+  redis_data:

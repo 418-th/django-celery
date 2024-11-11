@@ -1,6 +1,8 @@
 import os
 from datetime import timedelta
 
+from celery.schedules import crontab
+
 import environ
 from easy_thumbnails.conf import Settings as thumbnail_settings
 
@@ -321,6 +323,11 @@ CELERYBEAT_SCHEDULE = {
         'task': 'accounting.tasks.bill_timeline_entries',
         'schedule': timedelta(minutes=1),
     },
+    'send_email_notifications': {
+        'task': 'mailer.tasks.send_email_notifications',
+        'schedule': crontab(hour=0, minute=0),
+        # 'schedule': timedelta(minutes=1),
+    }
 }
 
 

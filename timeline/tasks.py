@@ -1,11 +1,11 @@
 from datetime import timedelta
 
-from elk.celery import app as celery
+from elk.celery_app import app as celery_app
 from market.models import Class
 from timeline.signals import class_starting_student, class_starting_teacher
 
 
-@celery.task
+@celery_app.task
 def notify_15min_to_class():
     for i in Class.objects.starting_soon(timedelta(minutes=30)).filter(pre_start_notifications_sent_to_teacher=False).distinct('timeline'):
         for other_class_with_the_same_timeline in Class.objects.starting_soon(timedelta(minutes=30)).filter(timeline=i.timeline):

@@ -1,10 +1,10 @@
 from accounting.models import Event as AccEvent
-from elk.celery import app as celery
+from elk.celery_app import app as celery_app
 from elk.logging import logger
 from timeline.models import Entry as TimelineEntry
 
 
-@celery.task
+@celery_app.task
 def bill_timeline_entries():
     for entry in TimelineEntry.objects.to_be_marked_as_finished().filter(taken_slots__gte=1):
         entry.is_finished = True
