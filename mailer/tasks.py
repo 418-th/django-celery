@@ -31,7 +31,7 @@ def send_email_notifications(self, customers_data: List[Dict[str, Any]] = None):
             )  # list() is required to serialize object to next worker, if this fails
         for index, customer in enumerate(customers_data):
             owl_instance = Owl(
-                template='mail/class/student/scheduled.html',
+                template='mailer/notification.html',
                 ctx={
                     'first_name': customer.get('customer_first_name'),
                     'last_name': customer.get('customer_last_name'),
